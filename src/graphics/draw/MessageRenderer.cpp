@@ -17,6 +17,9 @@
 #include "graphics/emotes.h"
 #include "main.h"
 #include "meshUtils.h"
+#ifdef DEPOLONIZACJA
+#include "Depolonize.h"
+#endif
 #include <string>
 #include <vector>
 
@@ -656,6 +659,15 @@ void drawTextMessageFrame(OLEDDisplay *display, OLEDDisplayUiState *state, int16
 
         const char *msgText = MessageStore::getText(m);
 
+#ifdef DEPOLONIZACJA
+        // Depolonizacja - zamiana polskich znaków na ASCII
+        char depolonizedText[480];
+        strncpy(depolonizedText, msgText, sizeof(depolonizedText) - 1);
+        depolonizedText[sizeof(depolonizedText) - 1] = '\0';
+        depolonize(depolonizedText);
+        msgText = depolonizedText;
+#endif
+
         int wrapWidth = mine ? rightTextWidth : leftTextWidth;
         std::vector<std::string> wrapped = generateLines(display, "", msgText, wrapWidth);
         // Per-message wrap-line limit: even if wrapping produces many lines, cap them to prevent
@@ -1170,6 +1182,16 @@ void handleNewMessage(OLEDDisplay *display, const StoredMessage &sm, const mesht
 
     // Always focus into the correct conversation thread when a message with real text arrives
     const char *msgText = MessageStore::getText(sm);
+
+#ifdef DEPOLONIZACJA
+    // Depolonizacja - zamiana polskich znaków na ASCII
+    char depolonizedText[480];
+    strncpy(depolonizedText, msgText, sizeof(depolonizedText) - 1);
+    depolonizedText[sizeof(depolonizedText) - 1] = '\0';
+    depolonize(depolonizedText);
+    msgText = depolonizedText;
+#endif
+
     if (msgText && msgText[0] != '\0') {
         setThreadFor(sm, packet);
     }
